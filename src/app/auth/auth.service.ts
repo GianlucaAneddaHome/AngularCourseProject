@@ -1,43 +1,50 @@
+import { Router } from '@angular/router';
 import * as firebase from 'firebase';
-import { $ } from 'protractor';
+import { Injectable } from '@angular/core';
 
+@Injectable()
 export class AuthService {
-    private token: string;
+  token: string;
 
-    signUpUser(email: string, password: string) {
-        firebase.auth().createUserWithEmailAndPassword(email, password).catch(
-            (error: any) => console.log(error)
-        );
-    }
+  constructor(private router: Router) {}
 
-    signInUser(email: string, password: string) {
-        firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(
-            (response: any) => {
-                console.log(response);
-                firebase.auth().currentUser.getToken().then (
-                    (token: string) => this.token = token
-                );
-            }
-        )
-        .catch(
-            (error: any) => console.log(error)
-        );
-    }
+  signupUser(email: string, password: string) {
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .catch(
+        error => console.log(error)
+      )
+  }
 
-    getToken() {
-        firebase.auth().currentUser.getToken().then (
-            (token: string) => this.token = token
-        );
-        return this.token;
-    }
+  signinUser(email: string, password: string) {
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(
+        response => {
+          this.router.navigate(['/']);
+          firebase.auth().currentUser.getToken()
+            .then(
+              (token: string) => this.token = token
+            )
+        }
+      )
+      .catch(
+        error => console.log(error)
+      );
+  }
 
-    isAuthenticated() {
-        return this.token != null;
-    }
+  logout() {
+    firebase.auth().signOut();
+    this.token = null;
+  }
 
-    logout() {
-        firebase.auth().signOut();
-        this.token = null;
-    }
+  getToken() {
+    firebase.auth().currentUser.getToken()
+      .then(
+        (token: string) => this.token = token
+      );
+    return this.token;
+  }
+
+  isAuthenticated() {
+    return this.token != null;
+  }
 }
